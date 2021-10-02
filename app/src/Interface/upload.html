@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<style>
+    /*
+*
+* ==========================================
+* CUSTOM UTIL CLASSES
+* ==========================================
+*
+*/
+#upload {
+    opacity: 0;
+}
+
+#upload-label {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+}
+
+.image-area {
+    border: 2px dashed rgba(255, 255, 255, 0.7);
+    padding: 1rem;
+    position: relative;
+}
+
+.image-area::before {
+    content: 'Uploaded image result';
+    color: #fff;
+    font-weight: bold;
+    text-transform: uppercase;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    z-index: 1;
+}
+
+.image-area img {
+    z-index: 2;
+    position: relative;
+}
+
+#_convertImg{
+    margin-left:40%;
+}
+
+/*
+*
+* ==========================================
+* FOR DEMO PURPOSES
+* ==========================================
+*
+*/
+body {
+    min-height: 100vh;
+    background-color: #757f9a;
+    background-image: linear-gradient(147deg, #757f9a 0%, #d7dde8 100%);
+}
+
+/*
+
+</style>
+</head>
+<body>
+    
+<div class="container py-5">
+
+    <!-- For demo purpose -->
+    <header class="text-white text-center">
+        <h3 class="display-5 text-uppercase">Automated Site Builder using AI</h3>
+        <p class="lead mb-0">Upload Image To convert into HTML</p>
+    </header>
+
+
+    <div class="row py-4">
+        <div class="col-lg-6 mx-auto my-5">
+
+            <!-- Upload image input-->
+            <div class="input-group mb-3 px-2 py-2 rounded-pill bg-white shadow-sm">
+                <input id="upload" name="upload" type="file" class="form-control border-0">
+                <label id="upload-label" for="upload" class="font-weight-light text-muted">Choose file</label>
+                <div class="input-group-append">
+                    <label for="upload" class="btn btn-light m-0 rounded-pill px-4"> <i class="fa fa-cloud-upload mr-2 text-muted"></i><small class="text-uppercase font-weight-bold text-muted">Choose file</small></label>
+                </div>
+            </div>
+
+            <!-- Uploaded image area-->
+            <div class="image-area mt-4"><img id="imageResult" src="#" alt="" class="img-fluid rounded shadow-sm mx-auto d-block"></div>
+            
+            <div class="_Htmlarea"></div>
+            <button class="btn btn-primary mt-2" id="_convertImg"><i class="fa fa-refresh"></i>&nbsp;&nbsp;Convert</button>
+
+        </div>
+    </div>
+</div>
+<script>
+    
+/*  ==========================================
+    SHOW UPLOADED IMAGE
+* ========================================== */
+$(function () {
+    $('#_convertImg').css('display','none');
+    $('._Htmlarea').css('display','none');
+    
+    $('#upload').on('change', function () {
+        var myFile = document.getElementById('upload').files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imageResult')
+                .attr('src', e.target.result);
+        };
+        reader.readAsDataURL(myFile);
+        
+        var formData = new FormData();
+        formData.append('upload', myFile);
+        formData.append('action', 'upload');        
+
+        $.ajax({
+            type : 'POST',
+            url : "/backup/Interface/upload.pl",
+            data : formData,
+            dataType : "json",
+            processData: false,
+            contentType: false,
+            success : function( response ) {
+                if (response.success) {
+                    $('#_convertImg').css('display','block');
+                } else {
+                    
+                }
+            },
+            error : function(xhr, textStatus, error) {
+                console.log(xhr);
+                console.log(textStatus);
+                console.log(error)
+            },
+        });
+    });
+    
+    $('#_convertImg').on('click', function () {
+        $('.image-area').css('display','none');
+        $('._Htmlarea').css('display','block');
+
+        //var data = "<div class='container'><div class='jumbotron'><h1>My First Bootstrap Page</h1><p>Resize this responsive page to see the effect!</p></div></div>";
+        
+        //var data = "<div class='container'><textarea id="w3review" name="w3review" rows="4" cols="50">Hellow World</textarea></div>";
+        
+        var data = "<div class='container'><h4>Here is the HTML for the uploaded image</h4><textarea name='textarea-1' id='textarea-1' cols='68' rows='20' wrap='hard'></textarea><button class='btn btn-primary mt-2' id='preview-html'>Preview</button>&nbsp;&nbsp;<button class='btn btn-primary mt-2' id='save'>Save</button></div>";
+
+        $('._Htmlarea').append(data);
+        $('#_convertImg').css('display','none');
+        
+         var formData = new FormData();
+        formData.append('filename', 'whm.png');
+        formData.append('action', 'generate_html'); 
+        
+        $.ajax({
+            type : 'POST',
+            url : "/backup/Interface/upload.pl",
+            data : formData,
+            dataType : "json",
+            processData: false,
+            contentType: false,
+            success : function( response ) {
+                if (response.success) {
+                    $('#textarea-1').html(response.data);
+                } else {
+                    $('#textarea-1').html('Failed to fetch the data');
+                }
+            },
+            error : function(xhr, textStatus, error) {
+                console.log(xhr);
+                console.log(textStatus);
+                console.log(error)
+            },
+        });
+        
+    });
+});
+
+/*  ==========================================
+    SHOW UPLOADED IMAGE NAME
+* ========================================== */
+var input = document.getElementById( 'upload' );
+var infoArea = document.getElementById( 'upload-label' );
+
+input.addEventListener( 'change', showFileName );
+function showFileName( event ) {
+  var input = event.srcElement;
+  var fileName = input.files[0].name;
+  infoArea.textContent = 'File name: ' + fileName;
+}
+
+</script>
+</body>
+</html>
