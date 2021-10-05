@@ -30,22 +30,17 @@ print $cgi->header();
 	   my $filename = $cgi->param('filename');
     (my $html_filename = $filename) =~ s/(.*)\.(.*)/$1.html/g;
 
-  my $result =1;
+  my $result;
 
-#eval{$result=`python3 /opt/lampp/htdocs/image2html/app/src/convert_single_image.py --output_folder /opt/lampp/htdocs/image2html/app/src/generated_html  --model_json_file /opt/lampp/htdocs/image2html/app/bin/model_json.json  --model_weights_file /opt/lampp/htdocs/image2html/app/bin/weights.h5 --png_path /opt/lampp/htdocs/image2html/app/examples/$filename`};
-#print to_json({ success => 1, result => $result, error=>$@});
-
+  eval{$result=`python3 /opt/lampp/htdocs/image2html/app/src/convert_single_image.py --  output_folder /opt/lampp/htdocs/image2html/app/src/generated_html --model_json_file /opt/lampp/htdocs/image2html/app/bin/model_json.json --model_weights_file /opt/lampp/htdocs/image2html/app/bin/weights.h5 --png_path /opt/lampp/htdocs/image2html/app/examples/$filename`};
 
     my $Htmlfilepath = join('/', HTML_DIR, $html_filename);
     open(READFILE, $Htmlfilepath) or die "File '$Htmlfilepath' can't be opened";
     
-    
     my $html;
     $html .= $_ while (<READFILE>);
-close READFILE;
-   # my $result =  { success => 1, data => $html, filename => $filename};
+    close READFILE;
+   
    print to_json({ success => 1, data => $html, filename => $Htmlfilepath, result => $result});
-    #print "{\"success\":1,\"data\":\"$html\"}";
-
-     }
+}
 
