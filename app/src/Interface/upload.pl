@@ -1,35 +1,21 @@
-#!/usr/bin/perl -w
+#!/opt/lampp/bin/perl
 
 use strict;
 use warnings;
 use JSON;
-use Data::Dumper;
 use CGI;
 
-use constant ROOT_DIR => '/home1/tqvivekv/public_html/backup/Interface/Img';
+use constant ROOT_DIR => '../../examples';
+use constant HTML_DIR => '../generated_html';
 
 my $cgi = new CGI;
 print $cgi->header();
 
-my $action = $cgi->param('action');
-
-my %actions = (
-    upload        => sub { upload_image($cgi) },
-    generate_html => sub { generate_html($cgi) },
-    save          => sub { save_html() },
-);
-
-my $result   = $actions{$action}();
-my $response = eval{ JSON::to_json( $result ||  {} )  };
-
-print $response;
-
-sub upload_image {
-    my $cgi = shift;
-    
     my $filename  = $cgi->param('upload');
     my $UPLOAD_FH = $cgi->upload('upload');
-    
+    my $action = $cgi->param('action');
+   
+  if($action eq 'upload'){
     my $file = join('/', ROOT_DIR, $filename);
     
     open (UPLOADFILE, ">$file") or die "failed to open file $!";
@@ -38,30 +24,28 @@ sub upload_image {
         print UPLOADFILE;
       }
     close UPLOADFILE;
-    
-    return { success => 1, filename => $file };
-}
+    print "{\"success\":1, \"action\":\"$action\"}";
 
-sub generate_html {
-    my $cgi = shift;
+    }elsif($action eq 'generate_html'){
+	   my $filename = $cgi->param('filename');
+    (my $html_filename = $filename) =~ s/(.*)\.(.*)/$1.html/g;
+
+  my $result =1;
+
+#eval{$result=`python3 /opt/lampp/htdocs/image2html/app/src/convert_single_image.py --output_folder /opt/lampp/htdocs/image2html/app/src/generated_html  --model_json_file /opt/lampp/htdocs/image2html/app/bin/model_json.json  --model_weights_file /opt/lampp/htdocs/image2html/app/bin/weights.h5 --png_path /opt/lampp/htdocs/image2html/app/examples/$filename`};
+#print to_json({ success => 1, result => $result, error=>$@});
+
+
+    my $Htmlfilepath = join('/', HTML_DIR, $html_filename);
+    open(READFILE, $Htmlfilepath) or die "File '$Htmlfilepath' can't be opened";
     
-    my $filename = $cgi->param('filename');
-    my $full_path = join('/', ROOT_DIR, $filename);
     
-    ############# command to convert into html ################################
-    # python convert_single_image.py --png_path ../examples/drawn_example1.png \
-    #  --output_folder ./generated_html \
-    #  --model_json_file ../bin/model_json.json \
-    #  --model_weights_file ../bin/weights.h5
-    ###########################################################################
-      
-    my $html = <<HTML;
-<html>
-<Title>Test Sample</Title>
-<h1>Test Header</h1>
-</html>
-HTML
-    
-    return { success => 1, data => $html };
-}
- 
+    my $html;
+    $html .= $_ while (<READFILE>);
+close READFILE;
+   # my $result =  { success => 1, data => $html, filename => $filename};
+   print to_json({ success => 1, data => $html, filename => $Htmlfilepath, result => $result});
+    #print "{\"success\":1,\"data\":\"$html\"}";
+
+     }
+
